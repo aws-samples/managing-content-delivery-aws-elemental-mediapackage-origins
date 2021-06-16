@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Reference recipe to help create CloudFront distribution, Multiple AEMP packaging groups and then define the CloudFront origins and behaviors in a single CloudFront distribution to point to the right AEMP-VOD origin.
+
+Mappings:
+    SourceCode:
+      General:
+        S3Bucket: 'CODE_BUCKET'
+        LambdaPrefix: 'PROJECT_NAME/code/CODE_VERSION'
+
+Resources:
+
+  AEMPCloudFrontSyncFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        S3Bucket: !FindInMap ["SourceCode", "General", "S3Bucket"]
+        S3Key: !Join ["/", [!FindInMap ["SourceCode", "General", "LambdaPrefix"],  "aemp-cloudfront-sync-function.zip"]]
+      MemorySize: 256
+      Handler: function.handler
+      Role: !GetAtt AEMPCloudFrontSyncFunctionRole.Arn
+      Timeout: 300
+      Runtime: python3.8
+
+  AEMPCloudFrontSyncFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: /service-role/
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Action:
+            - 'sts:AssumeRole'
+          Effect: "Allow"
+          Principal:
+            Service:
+              - lambda.amazonaws.com
+      Policies:
+        - PolicyName: CustomCFPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "cloudfront:GetDistribution"
+                  - "cloudfront:GetDistributionConfig"
+                  - "cloudfront:UpdateDistribution"
+                Resource: "*"
+                Effect: "Allow"
+        - PolicyName: CustomAEMPVODPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - "mediapackage-vod:ListAssets"
+                  - "mediapackage-vod:DescribeAsset"
+                Resource: "*"
+                Effect: "Allow"

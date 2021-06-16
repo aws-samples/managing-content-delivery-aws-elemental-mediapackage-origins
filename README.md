@@ -1,11 +1,12 @@
-## My Project
+## Managing content delivery across multiple AWS Elemental MediaPackage origins
+Sample code to help configure multiple AWS Elemental MediaPackage VOD origins in a single CloudFront distribution but inspecting a single asset in each MediaPackage group and inferring the unique path pattern to be defined as CloudFront Cache Behavior
 
-TODO: Fill this README out!
+## Build
 
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+* Clone this repository
+* Set 'bucket' and 'region' values to point to your S3 bucket which will hold the code artifacts in the specified AWS REGION
+* Install 'Make' (if not done already)
+* Run 'make setup' from command line inside the project folder
 
 ## Security
 
@@ -14,4 +15,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
-
