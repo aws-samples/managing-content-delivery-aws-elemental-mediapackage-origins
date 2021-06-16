@@ -1,22 +1,22 @@
 .PHONY: all
 
 bucket = S3 BUCKET
-project-name = vod-aemp-distribution
+project-name = aemp-vod-distribution
 region = AWS REGION CODE
 version = v1
-stack-name = vod-aemp-distribution-$(version)
+stack-name = $(project-name)-$(version)
 
 package:
 	mkdir -p dist
 	cd lambda-functions/aemp-cloudfront-sync-function && zip -FS -q -r ../../dist/aemp-cloudfront-sync-function.zip *
 
 copycode:
-	aws s3 cp dist/ s3://$(bucket)-$(region)/${project-name}/code/$(version)/ --recursive;
+	aws s3 cp dist/ s3://$(bucket)/${project-name}/code/$(version)/ --recursive;
 
 copytemplate:
 	mkdir -p dist
-	sed -e "s/CODE_BUCKET/${bucket}-${region}/g; s/CODE_VERSION/${version}/g; s/PROJECT_NAME/${project-name}/g;" templates/deploy.yaml > dist/deploy.yaml
-	aws s3 cp dist/deploy.yaml s3://$(bucket)-$(region)/$(project-name)/templates/$(version)/
+	sed -e "s/CODE_BUCKET/${bucket}/g; s/CODE_VERSION/${version}/g; s/PROJECT_NAME/${project-name}/g;" templates/deploy.yaml > dist/deploy.yaml
+	aws s3 cp dist/deploy.yaml s3://$(bucket)/$(project-name)/templates/$(version)/
 
 updatestack: copytemplate
 	aws cloudformation update-stack --stack-name $(stack-name) --region $(region) --capabilities CAPABILITY_IAM \
