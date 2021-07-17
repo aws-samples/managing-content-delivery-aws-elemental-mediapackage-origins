@@ -45,7 +45,7 @@ def update_distribution_config(pathPatterns,distributionConfig, distributionId, 
     # checking if Origins  exists
     try:
         distributionConfig["Origins"]["Items"]
-        print("Origins exist")
+        print("Some Origins exist")
     except:
         print("No Origins exist..adding")
         distributionConfig["Origins"] = {}
@@ -64,7 +64,7 @@ def update_distribution_config(pathPatterns,distributionConfig, distributionId, 
     print("Length of Origins before :{}".format(len(distributionConfig["Origins"]["Items"])))
 
     for origin in distributionConfig["Origins"]["Items"]:
-        print("{}".format(origin))
+        print("Origin = {}".format(origin))
         origins[origin["DomainName"]] = origin["Id"]
 
     cacheBehaviors = []
@@ -81,7 +81,13 @@ def update_distribution_config(pathPatterns,distributionConfig, distributionId, 
             print("Adding new CacheBehavior :{}:{}".format(path,pathPatterns[path]))
             originDetails = pathPatterns[path]
             originDomain = originDetails["OriginDomain"]
-            originId = 'EMP-{}'.format(originDomain.split(".")[0])
+            # check to create if MediaPackage origin is defined, if not create a new origin
+            if originDomain in origins.keys():
+                print("Origin already defined :{}".format(originDomain))
+                originId = origins[originDomain]
+            else:
+                originId = 'EMP-{}'.format(originDomain.split(".")[0])
+
             newCacheBehavior = create_cache_behavior(path,originId,originDetails["isMSS"])
             distributionConfig["CacheBehaviors"]["Items"].insert(0,newCacheBehavior)
             # check to create if MediaPackage origin is defined, if not create a new origin
