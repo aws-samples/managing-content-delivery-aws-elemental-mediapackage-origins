@@ -114,7 +114,7 @@ def create_new_origin(originDomain,originId,originShieldEnabled,originShieldRegi
 
     origin = {'Id': originId, 'DomainName': originDomain, 'OriginPath': '', 'CustomHeaders': {'Quantity': 0},
     'CustomOriginConfig': {'HTTPPort': 80, 'HTTPSPort': 443,
-    'OriginProtocolPolicy': 'match-viewer', 'OriginSslProtocols': {'Quantity': 3, 'Items': ['TLSv1', 'TLSv1.1', 'TLSv1.2']},
+    'OriginProtocolPolicy': 'https-only', 'OriginSslProtocols': {'Quantity': 3, 'Items': ['TLSv1', 'TLSv1.1', 'TLSv1.2']},
     'OriginReadTimeout': 30, 'OriginKeepaliveTimeout': 5}, 'ConnectionAttempts': 3, 'ConnectionTimeout': 10}
 
     # if origin shield is enabled set this origin shield AWS Region
@@ -125,7 +125,7 @@ def create_new_origin(originDomain,originId,originShieldEnabled,originShieldRegi
 
 def create_cache_behavior(pathPattern,originId,isMSS):
 
-    print("Path Pattern/OriginId/isMSS :{}/{}/{}".format(pathPattern,originId,isMSS))
+    print("Path Pattern|OriginId|isMSS :{}|{}|{}".format(pathPattern,originId,isMSS))
     behavior = {'PathPattern': pathPattern, 'TargetOriginId': originId, 'TrustedSigners': {'Enabled': False, 'Quantity': 0},
     'ViewerProtocolPolicy': 'redirect-to-https', 'AllowedMethods': {'Quantity': 3, 'Items': ['HEAD', 'GET','OPTIONS'],
     'CachedMethods': {'Quantity': 3, 'Items': ['HEAD', 'GET','OPTIONS']}}, 'SmoothStreaming': isMSS, 'Compress': False,
@@ -145,7 +145,7 @@ def get_origin_pathpatterns(endpoints):
         if ".ism" in response.path:
             isMSS = True
         # print("Response :{}".format(response))
-        pathPatterns[(generalise_path(response.path))] = {'OriginDomain':response.netloc,'isMSS':isMSS}
+        pathPatterns[(generalise_path(response.path, isMSS))] = {'OriginDomain':response.netloc,'isMSS':isMSS}
 
     # uniquePathPatterns = set(pathPatterns)
     # print("Unique Origins {}".format(uniqueOrigins))
@@ -153,10 +153,14 @@ def get_origin_pathpatterns(endpoints):
 
     return  pathPatterns
 
-def generalise_path(path):
+def generalise_path(path,isMSS):
     # print(path)
     parts = path.split("/")
     pattern = "/{}/{}/*/{}/*".format(parts[1],parts[2],parts[4])
+
+    # for Microsoft Smooth Streaming append the index.ism/* to the path pattern
+    if isMSS:
+        pattern = "{}/{}".format(pattern,"index.ism/*")
     # print(pattern)
     return pattern
 
