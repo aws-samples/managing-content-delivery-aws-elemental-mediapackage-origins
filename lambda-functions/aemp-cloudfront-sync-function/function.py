@@ -6,7 +6,7 @@ cloudfront = boto3.client('cloudfront')
 aemp_vod = boto3.client('mediapackage-vod')
 
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 def handler(event, context):
     log.info(f'Event :{event}')
@@ -119,16 +119,11 @@ def update_distribution_config(pathPatterns,distributionConfig, distributionId, 
     log.info(f'Length of CacheBehavior after :{len(distributionConfig["CacheBehaviors"]["Items"])}')
     log.info(f'Length of Origins after :{len(distributionConfig["Origins"]["Items"])}')
 
-    # print("Origins :{}".format(origins))
+    log.debug(f'Origins :{origins}')
     log.debug(f'Updated DistributionConfig :{distributionConfig}')
 
     response = cloudfront.update_distribution(DistributionConfig=distributionConfig,Id=distributionId,IfMatch=eTag)
-
-    # print("Origins :{}".format(origins))
-    # print("CacheBehaviors :{}".format(cacheBehaviors))
-
-    # response = cloudfront.update_distribution(DistributionConfig=distributionConfig,Id=distributionId,IfMatch=eTag)
-    # print("Updated distributionConfig :{}".format(response))
+    log.debug(f'Updated distributionConfig :{response}')
 
 def create_new_origin(originDomain,originId,originShieldEnabled,originShieldRegion):
 
@@ -164,11 +159,8 @@ def get_origin_pathpatterns(endpoints):
         isMSS = False
         if ".ism" in response.path:
             isMSS = True
-        # print("Response :{}".format(response))
         pathPatterns[(generalise_path(response.path, isMSS))] = {'OriginDomain':response.netloc,'isMSS':isMSS}
 
-    # uniquePathPatterns = set(pathPatterns)
-    # print("Unique Origins {}".format(uniqueOrigins))
     log.debug(f'Unique Path Patterns {pathPatterns}')
 
     return  pathPatterns
@@ -188,7 +180,7 @@ def get_playable_endpoints(assetIds):
 
     for assetId in assetIds:
         response = aemp_vod.describe_asset(Id=assetId)
-        print("Asset Detail {}".format(response["EgressEndpoints"]))
+        log.debug(f'Asset Detail {response["EgressEndpoints"]}')
         for endpoint in response["EgressEndpoints"]:
             endpoints.append(endpoint["Url"])
 
@@ -203,7 +195,6 @@ def list_assets(event):
     for packagingGroup in packagingGroups:
         response = aemp_vod.list_assets(MaxResults=1,PackagingGroupId=packagingGroup);
         for asset in response["Assets"]:
-            # print("Asset Info {}".format(asset))
             assetIds.append(asset["Id"])
 
     log.debug(f'Asset Ids {assetIds}')
