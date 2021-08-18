@@ -1,5 +1,8 @@
 ## Managing content delivery across multiple AWS Elemental MediaPackage origins
-Sample code to help configure multiple AWS Elemental MediaPackage VOD origins in a single CloudFront distribution but inspecting a single asset in each MediaPackage group and inferring the unique path pattern to be defined as CloudFront Cache Behavior and Origin
+Sample code to support configure multiple AWS Elemental MediaPackage VOD origins in a single CloudFront distribution by inspecting a single asset in each MediaPackage group and inferring the unique path pattern to be defined as CloudFront Cache Behavior and Origin
+
+Refer to blog [Managing content delivery across multiple AWS Elemental MediaPackage origins]
+(https://aws.amazon.com/blogs/media/metfc-managing-content-delivery-across-multiple-aws-elemental-mediapackage-origins/) for more details on the use case.
 
 ## Build
 
